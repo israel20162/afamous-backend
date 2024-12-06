@@ -2,7 +2,7 @@ import type { HttpContext } from '@adonisjs/core/http'
 import Admin from '../../models/admin.js'
 import edge from 'edge.js'
 
-// import {  loginValidator } from '../../validators/admin/auth.js'
+import {  loginValidator } from '../../validators/admin/auth.js'
 export default class AuthController {
   async create({ request, response, auth }: HttpContext) {
     const userData = request.only(['email', 'password', 'name', 'phone', 'role'])
@@ -18,8 +18,8 @@ export default class AuthController {
     return response.redirect().toRoute('admin.dashboard')
   }
 
-  async login({ request, response, auth }: HttpContext) {
-    const { email, password } = request.all()
+  async login({ request, response, auth,session }: HttpContext) {
+    const { email, password } = await request.validateUsing(loginValidator)
 
     try {
 
@@ -34,6 +34,10 @@ export default class AuthController {
       return response.redirect().toRoute('admin.dashboard')
     } catch (error) {
       console.log('redirect', error)
+      session.flash('error', {
+        type: 'error',
+        message: 'Incorrect email or password'
+      })
 
       return response.redirect('back')
     }
